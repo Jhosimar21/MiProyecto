@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const DENSIDAD = 0.55;
 
   // Helpers
-  const $  = (id) => document.getElementById(id);
+  const $ = (id) => document.getElementById(id);
   const fmt = (n) =>
     Number(n).toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- Cálculo principal
   function calcular() {
-    const G  = parseFloat($("galones").value);
+    const G = parseFloat($("galones").value);
     const KM = parseFloat($("km").value);
     if (!G || !KM || G <= 0 || KM <= 0) {
       alert("Ingresa valores válidos (>0).");
@@ -23,12 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Cálculos principales
     const g100 = (G * 100) / KM; // galones cada 100 km
-    const kmg  = KM / G;         // km por galón
-    const kg   = G * LITROS_POR_GALON * DENSIDAD; // peso del GLP en kg
+    const kmg = KM / G;         // km por galón
+    const kg = G * LITROS_POR_GALON * DENSIDAD; // peso del GLP en kg
 
-    $("kpi_g100").textContent  = fmt(g100);
-    $("kpi_kmg").textContent   = fmt(kmg);
-    $("kpi_kg").textContent    = fmt(kg);
+    $("kpi_g100").textContent = fmt(g100);
+    $("kpi_kmg").textContent = fmt(kmg);
+    $("kpi_kg").textContent = fmt(kg);
 
     $("btnGuardar").disabled = false;
     return { G, KM, g100, kmg, kg };
@@ -79,12 +79,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const csv = rows.map((row, idx) => {
       const cells = [...row.children];
       const useful = (idx === 0) ? cells : cells.slice(0, -1);
-      return useful.map(td => `"${td.textContent.replace(/"/g,'""').trim()}"`).join(",");
+      return useful.map(td => td.textContent.replace(/"/g, '').trim()).join(",");
     }).join("\n");
 
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    a.download = `historial_consumogas_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
+    a.download = `historial_consumogas_${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.csv`;
     a.click();
     URL.revokeObjectURL(a.href);
   }
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- LocalStorage
   function guardarHistorial() { localStorage.setItem("historial", tbody.innerHTML); }
-  function cargarHistorial()  { const data = localStorage.getItem("historial"); if (data) tbody.innerHTML = data; }
+  function cargarHistorial() { const data = localStorage.getItem("historial"); if (data) tbody.innerHTML = data; }
 
   // ---- Eliminar fila con delegación
   tbody.addEventListener("click", (e) => {
