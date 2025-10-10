@@ -1,8 +1,8 @@
-// app.js — limpio (pantalla completa + eliminar + CSV/PDF + LocalStorage)
+// app.js — versión galones (pantalla completa + eliminar + CSV/PDF + LocalStorage)
 
 document.addEventListener("DOMContentLoaded", () => {
   // Constantes
-  const GALON = 3.785;
+  const LITROS_POR_GALON = 3.785;
   const DENSIDAD = 0.55;
 
   // Helpers
@@ -12,42 +12,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tbody = document.querySelector("#hist tbody");
 
-  // ---- Cálculo
+  // ---- Cálculo principal
   function calcular() {
-    const L  = parseFloat($("litros").value);
+    const G  = parseFloat($("galones").value);
     const KM = parseFloat($("km").value);
-    if (!L || !KM || L <= 0 || KM <= 0) { alert("Ingresa valores válidos (>0)."); return null; }
+    if (!G || !KM || G <= 0 || KM <= 0) {
+      alert("Ingresa valores válidos (>0).");
+      return null;
+    }
 
-    const l100 = (L * 100) / KM;
-    const kml  = KM / L;
-    const kmgal = KM / (L / GALON);
-    const kg   = L * DENSIDAD;
+    // Cálculos principales
+    const g100 = (G * 100) / KM; // galones cada 100 km
+    const kmg  = KM / G;         // km por galón
+    const kg   = G * LITROS_POR_GALON * DENSIDAD; // peso del GLP en kg
 
-    $("kpi_l100").textContent  = fmt(l100);
-    $("kpi_kml").textContent   = fmt(kml);
-    $("kpi_kmgal").textContent = fmt(kmgal);
+    $("kpi_g100").textContent  = fmt(g100);
+    $("kpi_kmg").textContent   = fmt(kmg);
     $("kpi_kg").textContent    = fmt(kg);
 
     $("btnGuardar").disabled = false;
-    return { L, KM, l100, kml, kmgal, kg };
+    return { G, KM, g100, kmg, kg };
   }
 
-  // ---- Historial (agregar fila)
+  // ---- Agregar fila al historial
   function agregarFila(r) {
     const tr = document.createElement("tr");
     const td = (v) => { const el = document.createElement("td"); el.textContent = v; return el; };
 
     tr.append(
       td(new Date().toLocaleString()),
-      td(fmt(r.L)),
+      td(fmt(r.G)),
       td(fmt(r.KM)),
-      td(fmt(r.l100)),
-      td(fmt(r.kml)),
-      td(fmt(r.kmgal)),
+      td(fmt(r.g100)),
+      td(fmt(r.kmg)),
       td(fmt(r.kg))
     );
 
-    // Columna acción (botón eliminar)
+    // Botón eliminar
     const tdBtn = document.createElement("td");
     tdBtn.innerHTML = `<button type="button" class="btn-delete" title="Eliminar" style="background:none;border:none;cursor:pointer;font-size:16px">🗑️</button>`;
     tr.appendChild(tdBtn);
@@ -59,20 +60,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- Limpiar campos
   function limpiar() {
-    $("litros").value = "";
+    $("galones").value = "";
     $("km").value = "";
-    ["kpi_l100","kpi_kml","kpi_kmgal","kpi_kg"].forEach(id => ($(id).textContent = "—"));
+    ["kpi_g100", "kpi_kmg", "kpi_kg"].forEach(id => ($(id).textContent = "—"));
     $("btnGuardar").disabled = true;
-    $("litros").focus();
+    $("galones").focus();
   }
 
-  // ---- Borrar todo el historial
+  // ---- Borrar todo
   function borrarTodo() {
     tbody.innerHTML = "";
     guardarHistorial();
   }
 
-  // ---- Exportar CSV (omite columna acción)
+  // ---- Exportar CSV
   function exportCSV() {
     const rows = [...document.querySelectorAll("#hist tr")];
     const csv = rows.map((row, idx) => {
@@ -88,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     URL.revokeObjectURL(a.href);
   }
 
-  // ---- Exportar PDF (omite columna acción)
+  // ---- Exportar PDF
   function exportPDF() {
     const win = window.open("", "_blank");
     const css = `
@@ -110,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function guardarHistorial() { localStorage.setItem("historial", tbody.innerHTML); }
   function cargarHistorial()  { const data = localStorage.getItem("historial"); if (data) tbody.innerHTML = data; }
 
-  // Delegación: que el botón 🗑️ funcione también al recargar desde LocalStorage
+  // ---- Eliminar fila con delegación
   tbody.addEventListener("click", (e) => {
     const btn = e.target.closest(".btn-delete");
     if (btn) { btn.closest("tr")?.remove(); guardarHistorial(); }
@@ -124,8 +125,8 @@ document.addEventListener("DOMContentLoaded", () => {
   $("btnBorrarTodo")?.addEventListener("click", borrarTodo);
   $("btnCSV")?.addEventListener("click", exportCSV);
   $("btnPDF")?.addEventListener("click", exportPDF);
-  ["litros","km"].forEach(id => $(id)?.addEventListener("keypress", e => { if (e.key === "Enter") $("btnCalcular").click(); }));
+  ["galones", "km"].forEach(id => $(id)?.addEventListener("keypress", e => { if (e.key === "Enter") $("btnCalcular").click(); }));
 
-  // Init
+  // ---- Iniciar
   cargarHistorial();
 });

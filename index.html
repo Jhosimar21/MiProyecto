@@ -1,87 +1,81 @@
 <!doctype html>
 <html lang="es">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Calculadora de consumo</title>
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora de consumo</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
-    <main class="wrap">
-        <div class="card">
-            <h1>Calculadora de consumo</h1>
-            <p class="sub">Ingresa litros y kilómetros para calcular</p>
+  <main class="wrap">
+    <div class="card">
+      <h1>Calculadora de consumo</h1>
+      <p class="sub">Ingresa galones y kilómetros para calcular</p>
 
-            <div class="grid">
-                <div class="col-6">
-                    <label for="litros">Litros cargados</label>
-                    <input id="litros" type="number" step="0.01" min="0" placeholder="Ej. 30" />
-                </div>
-                <div class="col-6">
-                    <label for="km">Km recorridos</label>
-                    <input id="km" type="number" step="0.1" min="0" placeholder="Ej. 240" />
-                </div>
-
-                <div class="col-12 actions">
-                    <button class="primary" id="btnCalcular">Calcular</button>
-                    <button id="btnGuardar" disabled>Agregar al historial</button>
-                    <button id="btnLimpiar">Limpiar</button>
-                    <button id="btnBorrarTodo">Borrar todo</button>
-                    <button id="btnCSV">Exportar CSV</button>
-                    <button id="btnPDF">Exportar PDF</button>
-                    <span class="muted small">
-                        L/100=(L×100)/km · km/L=km/L · km/gal=km/(L/3.785) · kg=L×0.55
-                    </span>
-                </div>
-
-                <div class="col-12 results">
-                    <div class="kpi">
-                        <h3>L/100 km</h3>
-                        <p id="kpi_l100">—</p>
-                    </div>
-                    <div class="kpi">
-                        <h3>km/L</h3>
-                        <p id="kpi_kml">—</p>
-                    </div>
-                    <div class="kpi">
-                        <h3>km/gal</h3>
-                        <p id="kpi_kmgal">—</p>
-                    </div>
-                    <div class="kpi">
-                        <h3>kg GLP</h3>
-                        <p id="kpi_kg">—</p>
-                    </div>
-                </div>
-
-                <div class="col-12">
-                    <table id="hist">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Litros</th>
-                                <th>Km</th>
-                                <th>L/100</th>
-                                <th>km/L</th>
-                                <th>km/gal</th>
-                                <th>kg</th>
-                                <th>Eliminar</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="7" class="muted">Imprime a PDF para guardar el historial.</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
+      <div class="grid">
+        <div class="col-6">
+          <label for="galones">Galones cargados</label>
+          <input id="galones" type="number" step="0.01" min="0" placeholder="Ej. 8" />
         </div>
-    </main>
 
-    <script src="app.js"></script>
+        <div class="col-6">
+          <label for="km">Km recorridos</label>
+          <input id="km" type="number" step="0.1" min="0" placeholder="Ej. 240" />
+        </div>
+
+        <div class="col-12 actions">
+          <button class="primary" id="btnCalcular">Calcular</button>
+          <button id="btnGuardar" disabled>Agregar al historial</button>
+          <button id="btnLimpiar">Limpiar</button>
+          <button id="btnBorrarTodo">Borrar todo</button>
+          <button id="btnCSV">Exportar CSV</button>
+          <button id="btnPDF">Exportar PDF</button>
+          <span class="muted small">
+            G/100 = (G × 100) / KM · km/G = KM / G · kg = G × (3.785 × 0.55)
+          </span>
+        </div>
+
+        <div class="col-12 results">
+          <div class="kpi">
+            <h3>G/100 km</h3>
+            <p id="kpi_g100">—</p>
+          </div>
+          <div class="kpi">
+            <h3>km/G</h3>
+            <p id="kpi_kmg">—</p>
+          </div>
+          <div class="kpi">
+            <h3>kg GLP</h3>
+            <p id="kpi_kg">—</p>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <table id="hist">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Galones</th>
+                <th>Km</th>
+                <th>G/100</th>
+                <th>km/G</th>
+                <th>kg GLP</th>
+                <th>Eliminar</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="7" class="muted">Imprime a PDF para guardar el historial.</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
 </body>
-
 </html>
