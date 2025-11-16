@@ -3,18 +3,20 @@
 :root {
     --bg: #0f172a;
     --card: #111827;
+    --card-light: #0b1224;
     --muted: #9ca3af;
     --text: #f8fafc;
     --accent: #22c55e;
+    --accent-soft: rgba(34, 197, 94, 0.18);
 }
 
 * {
-    box-sizing: border-box
+    box-sizing: border-box;
 }
 
 html,
 body {
-    height: 100%
+    height: 100%;
 }
 
 body {
@@ -22,24 +24,18 @@ body {
     font-family: system-ui, Segoe UI, Roboto, Arial;
     background: linear-gradient(120deg, #0b1024, #0f172a 45%, #0b1024);
     color: var(--text);
-    min-height: 100vh;
-    /* ocupa todo el alto */
-    display: flex;
-    /* centra el contenido */
+    min-height: 100vh;              /* ocupa todo el alto */
+    display: flex;                  /* centra el contenido */
     justify-content: center;
-    align-items: flex-start;
-    /* usa center si quieres 100% centrado */
-    padding: 24px;
-    /* margen interno del borde */
+    align-items: flex-start;        /* usa center si quieres 100% centrado */
+    padding: 24px;                  /* margen interno del borde */
 }
 
 /* contenedor a ancho completo */
 .wrap {
     width: 100%;
-    max-width: 1100px;
-    /* límite de lectura */
-    min-height: calc(100vh - 48px);
-    /* alto visible (resta padding del body) */
+    max-width: 1100px;              /* límite de lectura */
+    min-height: calc(100vh - 48px); /* alto visible (resta padding del body) */
 }
 
 /* la tarjeta llena el contenedor */
@@ -56,38 +52,67 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
 }
 
+/* variante ligera para panel de comparativa */
+.card.light,
+#panelComparativa {
+    background: var(--card-light);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, .08);
+    padding: 18px;
+}
+
 h1 {
     margin: 0 0 4px;
-    font-size: clamp(22px, 3.6vw, 32px)
+    font-size: clamp(22px, 3.6vw, 32px);
+}
+
+h2 {
+    margin: 20px 0 8px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+h3 {
+    margin: 0 0 4px;
 }
 
 .sub {
     margin: 0 0 18px;
-    color: var(--muted)
+    color: var(--muted);
 }
 
+/* GRID GENERAL */
 .grid {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 14px
+    gap: 14px;
+}
+
+.col-3 {
+    grid-column: span 3;
+}
+
+.col-4 {
+    grid-column: span 4;
 }
 
 .col-6 {
-    grid-column: span 6
+    grid-column: span 6;
 }
 
 .col-12 {
-    grid-column: span 12
+    grid-column: span 12;
 }
 
 label {
     display: block;
     margin: 4px 0 6px;
     color: #cbd5e1;
-    font-size: 14px
+    font-size: 14px;
 }
 
-input {
+input,
+textarea {
     width: 100%;
     padding: 12px 14px;
     border-radius: 12px;
@@ -95,18 +120,56 @@ input {
     background: #0b1224;
     color: var(--text);
     outline: none;
+    font-size: 14px;
 }
 
-input:focus {
+/* textarea específico */
+textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+input:focus,
+textarea:focus {
     border-color: #60a5fa;
-    box-shadow: 0 0 0 4px rgba(96, 165, 250, .15)
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, .15);
 }
 
+/* pequeño margen superior para el input de combustible seleccionado */
+.mt-8 {
+    margin-top: 8px;
+}
+
+/* input + botón "Ahora" en línea */
+.field-inline {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* botón pequeño "Ahora" */
+.mini-btn {
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, .18);
+    color: var(--text);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.mini-btn:hover {
+    background: #0f172a;
+}
+
+/* BOTONES DE ACCIÓN GENERALES */
 .actions {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    align-items: center
+    align-items: center;
+    margin-top: 12px;
 }
 
 button {
@@ -116,51 +179,61 @@ button {
     background: #111b34;
     color: var(--text);
     cursor: pointer;
+    font-size: 14px;
 }
 
 button.primary {
     background: linear-gradient(135deg, #16a34a, #22c55e);
     border: none;
     color: #04130b;
-    font-weight: 700
+    font-weight: 700;
 }
 
 button:disabled {
     opacity: .6;
-    cursor: not-allowed
+    cursor: not-allowed;
 }
 
 #btnCSV,
 #btnPDF {
-    background: #0e1a34
+    background: #0e1a34;
 }
 
-.results {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px
+/* BOTONES DE COMBUSTIBLE */
+.fuel-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
 }
 
-.kpi {
-    background: #0b1224;
-    border: 1px solid rgba(255, 255, 255, .08);
-    border-radius: 12px;
-    padding: 14px
-}
-
-.kpi h3 {
-    margin: 0 0 2px;
+.fuel-btn {
+    flex: 0 0 auto;
+    padding: 10px 12px;
     font-size: 13px;
-    color: #cbd5e1;
-    font-weight: 500
+    line-height: 1.2;
+    background: #0b1224;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .16);
 }
 
-.kpi p {
-    margin: 0;
-    font-size: 22px;
-    font-weight: 800
+/* estado seleccionado (actívalo desde JS añadiendo .active) */
+.fuel-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #052e16;
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    font-weight: 600;
 }
 
+/* texto pequeño dentro de los botones */
+.fuel-btn .small {
+    display: block;
+    color: #cbd5e1;   /* texto claro */
+    opacity: .9;      /* alta visibilidad */
+}
+
+/* TABLA DE HISTORIAL */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -176,33 +249,53 @@ td {
     padding: 10px 12px;
     border-bottom: 1px solid rgba(255, 255, 255, .06);
     text-align: left;
-    font-size: 14px
+    font-size: 14px;
 }
 
 th {
     color: #cbd5e1;
     font-weight: 600;
-    background: #0e1730
+    background: #0e1730;
 }
 
 tfoot td {
-    color: #cbd5e1
+    color: #cbd5e1;
 }
 
 .muted {
-    color: var(--muted)
+    color: var(--muted);
 }
 
 .small {
-    font-size: 12px
+    font-size: 12px;
 }
 
-@media (max-width:760px) {
-    .results {
-        grid-template-columns: 1fr 1fr
+/* botón eliminar dentro de la tabla */
+.btn-eliminar {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    background: #7f1d1d;
+    border: 1px solid rgba(248, 113, 113, 0.6);
+    color: #fee2e2;
+    cursor: pointer;
+}
+
+.btn-eliminar:hover {
+    background: #991b1b;
+}
+
+/* RESPONSIVE */
+@media (max-width: 760px) {
+    .col-3,
+    .col-4,
+    .col-6,
+    .col-12 {
+        grid-column: span 12;
     }
 
-    .col-6 {
-        grid-column: span 12
+    .actions {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
