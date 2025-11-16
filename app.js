@@ -745,8 +745,8 @@ function calcularComparativa() {
 
   if (!B || !A) return;
 
-  const baseOk = ["GASOLINA", "DB5"].includes(B.combustible);
-  const altOk = ["GLP", "GNV-C"].includes(A.combustible);
+  const baseOk = ["GASOLINA", "DIESEL"].includes(B.combustible);
+  const altOk = ["GLP", "GNV"].includes(A.combustible);
 
   if (!baseOk || !altOk) {
     cmpEnergia.textContent =
