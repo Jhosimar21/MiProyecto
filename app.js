@@ -72,27 +72,48 @@ let indiceAlternativa = null;
 
 const STORAGE_KEY = "historial_pruebas_consumo";
 
-// 🔹 NUEVO: key para guardar el borrador del formulario
-const FORM_KEY = "borrador_form_prueba_consumo";
-
 // =========================
 // 3. FUNCIONES AUXILIARES
 // =========================
 
-// Limpia espacios y comas antes de convertir
+// Normaliza entrada numérica (acepta 17.5, 17,5, 1.234,56, etc.)
 const toNumber = (v) => {
   if (v === null || v === undefined) return null;
-  const limpio = String(v).replace(/[\s,]/g, "");
-  const n = parseFloat(limpio);
+  let s = String(v).trim();
+  if (!s) return null;
+
+  // quitar espacios
+  s = s.replace(/\s/g, "");
+
+  // caso típico Perú: 1.234,56  ó  17,5
+  if (s.includes(",") && !s.includes(".")) {
+    // si el usuario puso miles con punto: 1.234,56 → 1234,56
+    s = s.replace(/\./g, "");
+    // coma decimal → punto para JS
+    s = s.replace(",", ".");
+  }
+
+  const n = parseFloat(s);
   return isNaN(n) ? null : n;
 };
 
+// Formato visual en la UI (Perú, con separador de miles)
 const formatNumber = (n, d = 2) =>
-  (n === null || isNaN(n))
+  n === null || isNaN(n)
     ? ""
     : n.toLocaleString("es-PE", {
         minimumFractionDigits: d,
         maximumFractionDigits: d,
+      });
+
+// Formato para CSV (SIN separador de miles, decimal con coma, ideal Excel Perú)
+const formatNumberCSV = (n, d = 2) =>
+  n === null || isNaN(n)
+    ? ""
+    : n.toLocaleString("es-PE", {
+        minimumFractionDigits: d,
+        maximumFractionDigits: d,
+        useGrouping: false, // sin miles
       });
 
 const formatDateTime = (dt) => {
@@ -124,87 +145,6 @@ function limpiarResultados() {
   btnGuardar.disabled = true;
 }
 
-// 🔹 NUEVO: guardar borrador del formulario en localStorage
-function guardarBorradorFormulario() {
-  const borrador = {
-    marca: inputMarca.value,
-    modelo: inputModelo.value,
-    anio: inputAnio.value,
-    vinPlaca: inputVinPlaca.value,
-    numeroPrueba: inputNumeroPrueba.value,
-    tecnico: inputTecnico.value,
-    inicio: inputInicio.value,
-    fin: inputFin.value,
-    observaciones: inputObservaciones.value,
-
-    combustible: tipoCombustibleSeleccionado,
-    combustibleTexto: inputCombustibleSeleccionado.value,
-    pcMJ: inputPcMJ.value,
-
-    precio: inputPrecio.value,
-    galones: inputGalones.value,
-    kmInicial: inputKmInicial.value,
-    kmFinal: inputKmFinal.value,
-    kmRecorridos: inputKmRecorridos.value,
-  };
-
-  try {
-    localStorage.setItem(FORM_KEY, JSON.stringify(borrador));
-  } catch (e) {
-    console.warn("No se pudo guardar borrador de formulario:", e);
-  }
-}
-
-// 🔹 NUEVO: cargar borrador del formulario desde localStorage
-function cargarBorradorFormulario() {
-  const data = localStorage.getItem(FORM_KEY);
-  if (!data) return;
-
-  try {
-    const b = JSON.parse(data);
-    if (!b || typeof b !== "object") return;
-
-    inputMarca.value = b.marca || "";
-    inputModelo.value = b.modelo || "";
-    inputAnio.value = b.anio || "";
-    inputVinPlaca.value = b.vinPlaca || "";
-    inputNumeroPrueba.value = b.numeroPrueba || "";
-    inputTecnico.value = b.tecnico || "";
-    inputInicio.value = b.inicio || "";
-    inputFin.value = b.fin || "";
-    inputObservaciones.value = b.observaciones || "";
-
-    inputCombustibleSeleccionado.value = b.combustibleTexto || "";
-    inputPcMJ.value = b.pcMJ || "";
-
-    inputPrecio.value = b.precio || "";
-    inputGalones.value = b.galones || "";
-    inputKmInicial.value = b.kmInicial || "";
-    inputKmFinal.value = b.kmFinal || "";
-    inputKmRecorridos.value = b.kmRecorridos || "";
-
-    tipoCombustibleSeleccionado = b.combustible || null;
-
-    // Marcar botón de combustible si existe
-    if (tipoCombustibleSeleccionado) {
-      fuelButtons.forEach((btn) => {
-        if (btn.dataset.tipo === tipoCombustibleSeleccionado) {
-          btn.classList.add("active");
-        } else {
-          btn.classList.remove("active");
-        }
-      });
-    }
-
-    // Recalcular KM recorridos si tiene datos
-    if (inputKmInicial.value && inputKmFinal.value) {
-      actualizarKmRecorridos(false); // false = no limpiar resultados
-    }
-  } catch (e) {
-    console.warn("No se pudo cargar borrador de formulario:", e);
-  }
-}
-
 function limpiarFormulario() {
   [
     inputMarca,
@@ -228,9 +168,6 @@ function limpiarFormulario() {
   tipoCombustibleSeleccionado = null;
   fuelButtons.forEach((b) => b.classList.remove("active"));
   limpiarResultados();
-
-  // 🔹 NUEVO: al limpiar formulario, también borrar borrador guardado
-  localStorage.removeItem(FORM_KEY);
 }
 
 // =========================
@@ -249,7 +186,6 @@ fuelButtons.forEach((btn) => {
     inputPcMJ.value = formatNumber(pc, 2);
 
     limpiarResultados();
-    guardarBorradorFormulario(); // 🔹 guardar cambio
   });
 });
 
@@ -257,64 +193,34 @@ fuelButtons.forEach((btn) => {
 // 5. KM RECORRIDOS
 // =========================
 
-function actualizarKmRecorridos(limpiar = true) {
+function actualizarKmRecorridos() {
   const i = toNumber(inputKmInicial.value);
   const f = toNumber(inputKmFinal.value);
 
   if (i === null || f === null || f <= i) {
     inputKmRecorridos.value = "";
-    if (limpiar) limpiarResultados();
-    guardarBorradorFormulario();
+    limpiarResultados();
     return;
   }
 
   inputKmRecorridos.value = formatNumber(f - i, 1);
-  if (limpiar) limpiarResultados();
-  guardarBorradorFormulario();
+  limpiarResultados();
 }
 
-inputKmInicial.addEventListener("input", () => actualizarKmRecorridos(true));
-inputKmFinal.addEventListener("input", () => actualizarKmRecorridos(true));
+inputKmInicial.addEventListener("input", actualizarKmRecorridos);
+inputKmFinal.addEventListener("input", actualizarKmRecorridos);
 
 // =========================
-// 6. GUARDAR BORRADOR EN CAMBIOS DE CAMPOS
-// =========================
-
-// Todos los campos del formulario que queremos que persistan
-const camposFormulario = [
-  inputMarca,
-  inputModelo,
-  inputAnio,
-  inputVinPlaca,
-  inputNumeroPrueba,
-  inputTecnico,
-  inputInicio,
-  inputFin,
-  inputObservaciones,
-  inputPrecio,
-  inputGalones,
-  inputKmInicial,
-  inputKmFinal,
-];
-
-camposFormulario.forEach((campo) => {
-  campo.addEventListener("input", guardarBorradorFormulario);
-});
-
-// =========================
-// 7. VALIDAR FORMULARIO
+// 6. VALIDAR FORMULARIO
 // =========================
 
 function validarFormularioAntesDeCalcular() {
   const errores = [];
 
   // Datos del vehículo
-  if (!inputMarca.value.trim()) {
-    errores.push("Ingresa la marca del vehículo.");
-  }
-  if (!inputModelo.value.trim()) {
-    errores.push("Ingresa el modelo del vehículo.");
-  }
+  if (!inputMarca.value.trim()) errores.push("Ingresa la marca del vehículo.");
+  if (!inputModelo.value.trim()) errores.push("Ingresa el modelo del vehículo.");
+
   if (!inputAnio.value.trim()) {
     errores.push("Ingresa el año del vehículo.");
   } else {
@@ -323,6 +229,7 @@ function validarFormularioAntesDeCalcular() {
       errores.push("Ingresa un año de vehículo válido (1900–2100).");
     }
   }
+
   if (!inputVinPlaca.value.trim()) {
     errores.push("Ingresa el VIN o la placa del vehículo.");
   }
@@ -336,12 +243,9 @@ function validarFormularioAntesDeCalcular() {
   }
 
   // Fechas
-  if (!inputInicio.value) {
-    errores.push("Ingresa la fecha y hora de inicio de la prueba.");
-  }
-  if (!inputFin.value) {
-    errores.push("Ingresa la fecha y hora de fin de la prueba.");
-  }
+  if (!inputInicio.value) errores.push("Ingresa la fecha y hora de inicio de la prueba.");
+  if (!inputFin.value) errores.push("Ingresa la fecha y hora de fin de la prueba.");
+
   if (inputInicio.value && inputFin.value) {
     const ini = new Date(inputInicio.value);
     const fin = new Date(inputFin.value);
@@ -383,7 +287,7 @@ function validarFormularioAntesDeCalcular() {
 }
 
 // =========================
-// 8. CALCULAR
+// 7. CALCULAR
 // =========================
 
 btnCalcular.addEventListener("click", () => {
@@ -427,13 +331,10 @@ btnCalcular.addEventListener("click", () => {
   inputKgGLP.value = kgGLP !== null ? formatNumber(kgGLP, 3) : "";
 
   btnGuardar.disabled = false;
-
-  // Guardar borrador con resultados también (opcional pero útil)
-  guardarBorradorFormulario();
 });
 
 // =========================
-// 9. HISTORIAL + LOCALSTORAGE
+// 8. HISTORIAL + LOCALSTORAGE
 // =========================
 
 function construirPrueba() {
@@ -473,12 +374,10 @@ function construirPrueba() {
   };
 }
 
-// Guarda en localStorage
 function guardarHistorial() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(listaPruebas));
 }
 
-// Carga desde localStorage
 function cargarHistorial() {
   const data = localStorage.getItem(STORAGE_KEY);
   if (!data) {
@@ -509,12 +408,12 @@ function renderHistorial() {
     tr.innerHTML = `
       <td>${formatDateTime(p.inicio)}</td>
       <td>${p.combustible}</td>
-      <td>${formatNumber(p.volumen)}</td>
+      <td>${formatNumber(p.volumen, 2)}</td>
       <td>${formatNumber(p.kmRecorridos, 1)}</td>
-      <td>${formatNumber(p.energiaTotalMJ)}</td>
-      <td>${formatNumber(p.gPor100)}</td>
-      <td>${formatNumber(p.kmPorGalon)}</td>
-      <td>${formatNumber(p.costoTotal)}</td>
+      <td>${formatNumber(p.energiaTotalMJ, 2)}</td>
+      <td>${formatNumber(p.gPor100, 2)}</td>
+      <td>${formatNumber(p.kmPorGalon, 2)}</td>
+      <td>${formatNumber(p.costoTotal, 2)}</td>
       <td>${p.tecnico}</td>
 
       <td>
@@ -540,7 +439,6 @@ function renderHistorial() {
   calcularComparativa();
 }
 
-// Funciones CRUD unificadas
 function agregarPrueba(prueba) {
   listaPruebas.push(prueba);
   guardarHistorial();
@@ -553,7 +451,6 @@ function eliminarPrueba(indice) {
   renderHistorial();
 }
 
-// Guardar desde el botón
 btnGuardar.addEventListener("click", () => {
   const p = construirPrueba();
   if (!p) return;
@@ -561,7 +458,6 @@ btnGuardar.addEventListener("click", () => {
   btnGuardar.disabled = true;
 });
 
-// Eventos de la tabla
 tbodyHist.addEventListener("click", (e) => {
   const elim = e.target.closest(".btn-eliminar");
   const base = e.target.closest(".btn-base");
@@ -594,7 +490,6 @@ tbodyHist.addEventListener("click", (e) => {
   }
 });
 
-// Borrar todo
 btnBorrarTodo.addEventListener("click", () => {
   if (!listaPruebas.length) return alert("No hay historial.");
   if (!confirm("¿Borrar TODO el historial?")) return;
@@ -605,42 +500,46 @@ btnBorrarTodo.addEventListener("click", () => {
   renderHistorial();
 });
 
-// Limpiar formulario
+// Confirmación para LIMPIAR solo el formulario actual
 btnLimpiar.addEventListener("click", () => {
+  const ok = confirm(
+    "¿Seguro que deseas LIMPIAR el formulario actual?\n\n" +
+    "Esta acción solo borra los datos de esta prueba en pantalla,\n" +
+    "pero NO borra el historial guardado."
+  );
+
+  if (!ok) return;
   limpiarFormulario();
 });
 
 // =========================
-// 10. FECHA AHORA
+// 9. FECHA AHORA
 // =========================
 
 btnInicioAhora?.addEventListener("click", () => {
   inputInicio.value = nowAsDateTimeLocal();
-  guardarBorradorFormulario();
 });
+
 btnFinAhora?.addEventListener("click", () => {
   inputFin.value = nowAsDateTimeLocal();
-  guardarBorradorFormulario();
 });
 
 // =========================
-// 11. CSV (con confirmación)
+// 10. CSV (compatible Excel Perú)
 // =========================
 
 const escapeCSV = (val) => {
   if (val === null || val === undefined) return "";
   let s = String(val).replace(/"/g, '""');
+  // usamos ; como separador, por eso solo cuidamos ;, salto de línea y comillas
   return /[;\n"]/.test(s) ? `"${s}"` : s;
 };
 
 function exportarCSV() {
-  if (!listaPruebas.length) {
-    alert("No hay historial.");
-    return;
-  }
+  if (!listaPruebas.length) return alert("No hay historial.");
 
   const confirmar = confirm(
-    "¿Deseas descargar el archivo CSV con el historial de pruebas?"
+    "¿Deseas exportar el historial a CSV para abrirlo en Excel?"
   );
   if (!confirmar) return;
 
@@ -654,20 +553,20 @@ function exportarCSV() {
     "N° prueba",
     "Técnico",
     "Combustible",
-    "PC",
-    "Precio",
-    "Volumen",
+    "PC (MJ/U)",
+    "Precio (S/)",
+    "Volumen (U)",
     "Km inicial",
     "Km final",
     "Km recorridos",
     "MJ totales",
     "G/100",
-    "km/G",
+    "km/U",
     "kg GLP",
-    "Costo total",
-    "Costo por km",
+    "Costo total (S/)",
+    "Costo por km (S/)",
     "MJ por sol",
-    "Costo por 100 MJ",
+    "Costo por 100 MJ (S/)",
     "Observaciones",
   ];
 
@@ -684,29 +583,29 @@ function exportarCSV() {
       p.numeroPrueba,
       p.tecnico,
       p.combustible,
-      p.pc,
-      p.precio,
-      p.volumen,
-      p.kmInicial,
-      p.kmFinal,
-      p.kmRecorridos,
-      p.energiaTotalMJ,
-      p.gPor100,
-      p.kmPorGalon,
-      p.kgGLP,
-      p.costoTotal,
-      p.costoPorKm,
-      p.mjPorSol,
-      p.costoPor100MJ,
+      formatNumberCSV(p.pc, 2),
+      formatNumberCSV(p.precio, 2),
+      formatNumberCSV(p.volumen, 2),
+      formatNumberCSV(p.kmInicial, 1),
+      formatNumberCSV(p.kmFinal, 1),
+      formatNumberCSV(p.kmRecorridos, 1),
+      formatNumberCSV(p.energiaTotalMJ, 2),
+      formatNumberCSV(p.gPor100, 2),
+      formatNumberCSV(p.kmPorGalon, 2),
+      formatNumberCSV(p.kgGLP, 3),
+      formatNumberCSV(p.costoTotal, 2),
+      formatNumberCSV(p.costoPorKm, 3),
+      formatNumberCSV(p.mjPorSol, 2),
+      formatNumberCSV(p.costoPor100MJ, 2),
       p.observaciones,
     ]
       .map(escapeCSV)
       .join(";");
+
     filas.push(fila);
   });
 
-  // BOM para que Excel lea bien los acentos
-  const BOM = "\uFEFF";
+  const BOM = "\uFEFF"; // para que Excel respete acentos
   const csvFinal = BOM + filas.join("\n");
 
   const blob = new Blob([csvFinal], {
@@ -725,14 +624,14 @@ function exportarCSV() {
 btnCSV.addEventListener("click", exportarCSV);
 
 // =========================
-// 12. COMPARATIVA
+// 11. COMPARATIVA
 // =========================
 
 function calcularComparativa() {
   cmpEnergia.textContent = "Sin datos suficientes.";
   cmpRendimiento.textContent = "Sin datos suficientes.";
   cmpAhorroEconomico.textContent = "Ahorro por km y total.";
-  cmpEnergiaPorSol.textContent = "Comparación MJ/S.";
+  cmpEnergiaPorSol.textContent = "Comparación MJ por S/.";
 
   if (indiceBase === null || indiceAlternativa === null) return;
   if (indiceBase === indiceAlternativa) {
@@ -750,7 +649,7 @@ function calcularComparativa() {
 
   if (!baseOk || !altOk) {
     cmpEnergia.textContent =
-      "Base debe ser GASOLINA/DB5 y alternativa GLP/GNV.";
+      "Base debe ser GASOLINA/DIESEL y alternativa GLP/GNV.";
     return;
   }
 
@@ -764,8 +663,8 @@ function calcularComparativa() {
     const dir = pct >= 0 ? "más" : "menos";
 
     cmpEnergia.textContent =
-      `${nA} entrega ${formatNumber(A.energiaTotalMJ)} MJ ` +
-      `vs ${formatNumber(B.energiaTotalMJ)} MJ de ${nB} ` +
+      `${nA} entrega ${formatNumber(A.energiaTotalMJ, 2)} MJ ` +
+      `vs ${formatNumber(B.energiaTotalMJ, 2)} MJ de ${nB} ` +
       `(${formatNumber(Math.abs(pct), 1)}% ${dir} energía).`;
   }
 
@@ -776,8 +675,8 @@ function calcularComparativa() {
     const dir = d >= 0 ? "mayor" : "menor";
 
     cmpRendimiento.textContent =
-      `${nA} rinde ${formatNumber(A.kmPorGalon)} km/U ` +
-      `vs ${formatNumber(B.kmPorGalon)} km/U de ${nB} ` +
+      `${nA} rinde ${formatNumber(A.kmPorGalon, 2)} km/U ` +
+      `vs ${formatNumber(B.kmPorGalon, 2)} km/U de ${nB} ` +
       `(${formatNumber(Math.abs(pct), 1)}% ${dir} rendimiento).`;
   }
 
@@ -821,22 +720,19 @@ function calcularComparativa() {
     const dir = d >= 0 ? "más" : "menos";
 
     cmpEnergiaPorSol.textContent =
-      `${nA} da ${formatNumber(A.mjPorSol, 2)} MJ/S ` +
-      `vs ${formatNumber(B.mjPorSol, 2)} MJ/S de ${nB} ` +
+      `${nA} da ${formatNumber(A.mjPorSol, 2)} MJ por S/ ` +
+      `vs ${formatNumber(B.mjPorSol, 2)} MJ por S/ de ${nB} ` +
       `(${formatNumber(Math.abs(pct), 1)}% ${dir} energía por sol).`;
   }
 }
 
 // =========================
-// 13. INICIO
+// 12. INICIO
 // =========================
 
 document.addEventListener("DOMContentLoaded", () => {
-  cargarHistorial();          // historial de pruebas
-  cargarBorradorFormulario(); // 🔹 restaura lo que estabas escribiendo
+  cargarHistorial();
 });
-
-// ==== PDF ====
 
 if (btnPDF) {
   btnPDF.addEventListener("click", () => {
