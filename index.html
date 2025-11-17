@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="es">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -16,7 +15,7 @@
 
       <!-- =========================================================
            SECCIÓN 1: DATOS DE LA PRUEBA Y DEL VEHÍCULO
-           ========================================================= -->
+      ========================================================= -->
       <h2>Datos de la prueba y del vehículo</h2>
 
       <div class="grid">
@@ -69,31 +68,59 @@
       </div>
 
       <!-- =========================================================
-           SECCIÓN 2: DATOS DE COMBUSTIBLE Y RECORRIDO
-           ========================================================= -->
+           SECCIÓN 1B: MOTOR Y NEUMÁTICOS
+      ========================================================= -->
+      <h2>Motor y neumáticos (según fabricante / prueba)</h2>
+
+      <div class="grid">
+        <!-- Motor -->
+        <div class="col-4">
+          <label for="cilindradaCc">Cilindrada (cc)</label>
+          <input id="cilindradaCc" placeholder="Ej. 1392" />
+        </div>
+
+        <div class="col-4">
+          <label for="tipoTransmision">Transmisión</label>
+          <input id="tipoTransmision" placeholder="Ej. Automática CVT / Manual 6v" />
+        </div>
+
+        <!-- Presión recomendada (fabricante) -->
+        <div class="col-4">
+          <label for="psiRecDel">Presión recomendada delantera (PSI)</label>
+          <input id="psiRecDel" placeholder="Ej. 30" />
+        </div>
+
+        <div class="col-4">
+          <label for="psiRecTra">Presión recomendada trasera (PSI)</label>
+          <input id="psiRecTra" placeholder="Ej. 35" />
+        </div>
+
+        <!-- Presión en la prueba -->
+        <div class="col-4">
+          <label for="psiPruebaDel">Presión en la prueba delantera (PSI)</label>
+          <input id="psiPruebaDel" placeholder="Ej. 30" />
+        </div>
+
+        <div class="col-4">
+          <label for="psiPruebaTra">Presión en la prueba trasera (PSI)</label>
+          <input id="psiPruebaTra" placeholder="Ej. 33" />
+        </div>
+      </div>
+
+      <!-- =========================================================
+           SECCIÓN 2: COMBUSTIBLE Y RECORRIDO
+      ========================================================= -->
       <h2>Datos de combustible y recorrido</h2>
 
       <div class="grid">
         <div class="col-12">
           <label>Tipo de combustible</label>
-          <p class="muted small">Selecciona según la tabla de equivalencia energética.</p>
 
           <div class="fuel-buttons" id="tipoCombustible">
-            <button type="button" class="fuel-btn" data-tipo="GASOLINA" data-pc="122.33">
-              Gasolina<br><span class="small">(122.33 MJ/gal)</span>
-            </button>
-
-            <button type="button" class="fuel-btn" data-tipo="DIESEL" data-pc="136.45">
-              Diésel<br><span class="small">(136.45 MJ/gal)</span>
-            </button>
-
-            <button type="button" class="fuel-btn" data-tipo="GLP" data-pc="100.93">
-              GLP<br><span class="small">(100.93 MJ/gal)</span>
-            </button>
-
-            <button type="button" class="fuel-btn" data-tipo="GNV" data-pc="39.87">
-              GNV<br><span class="small">(39.87 MJ/m³)</span>
-            </button>
+            <button type="button" class="fuel-btn" data-tipo="GASOLINA" data-pc="122.33">Gasolina</button>
+            <button type="button" class="fuel-btn" data-tipo="DIESEL" data-pc="136.45">Diésel</button>
+            <button type="button" class="fuel-btn" data-tipo="GLP" data-pc="100.93">GLP</button>
+            <button type="button" class="fuel-btn" data-tipo="GNV" data-pc="39.87">GNV</button>
           </div>
 
           <input id="combustibleSeleccionado" class="mt-8" placeholder="Combustible seleccionado" readonly />
@@ -126,21 +153,19 @@
 
         <div class="col-12">
           <label for="observaciones">Observaciones durante la prueba</label>
-          <textarea id="observaciones" rows="3"
-            placeholder="Ej.: Recomutó a cierto km, comportamiento del motor, fallas, etc."></textarea>
+          <textarea id="observaciones" rows="3" placeholder="Ej.: recomutó, fallas, etc."></textarea>
         </div>
       </div>
 
       <!-- =========================================================
-           SECCIÓN 3: RESULTADOS CALCULADOS
-           ========================================================= -->
+           SECCIÓN 3: RESULTADOS
+      ========================================================= -->
       <h2>Resultados de la prueba</h2>
 
       <div class="grid">
         <div class="col-4">
           <label for="pcMJ">Poder calorífico (PC)</label>
           <input id="pcMJ" readonly />
-          <span class="muted small">Se llena automáticamente al seleccionar el combustible.</span>
         </div>
 
         <div class="col-4">
@@ -149,7 +174,7 @@
         </div>
 
         <div class="col-4">
-          <label for="mjPorSol">Energía por sol (MJ por S/)</label>
+          <label for="mjPorSol">Energía por sol (MJ/S)</label>
           <input id="mjPorSol" readonly />
         </div>
 
@@ -164,7 +189,7 @@
         </div>
 
         <div class="col-4">
-          <label for="kgGLP">kg de GLP</label>
+          <label for="kgGLP">kg GLP</label>
           <input id="kgGLP" readonly />
         </div>
 
@@ -186,83 +211,45 @@
 
       <!-- =========================================================
            SECCIÓN 4: COMPARATIVA
-           ========================================================= -->
+      ========================================================= -->
       <h2>Comparativa entre combustibles</h2>
 
       <section id="panelComparativa" class="card light">
-        <p class="muted small">
-          Esta sección comparará pruebas de diferentes combustibles.
-        </p>
-
         <div class="grid">
-          <div class="col-6">
-            <h3>Comparación energética (MJ)</h3>
-            <p id="cmpEnergia">Sin datos suficientes.</p>
-          </div>
-
-          <div class="col-6">
-            <h3>Comparación de rendimiento (km/G)</h3>
-            <p id="cmpRendimiento">Sin datos suficientes.</p>
-          </div>
-
-          <div class="col-6">
-            <h3>Ahorro económico</h3>
-            <p id="cmpAhorroEconomico">Sin datos suficientes.</p>
-          </div>
-
-          <div class="col-6">
-            <h3>Energía por sol</h3>
-            <p id="cmpEnergiaPorSol">Sin datos suficientes.</p>
-          </div>
+          <div class="col-6"><h3>Comparación energética (MJ)</h3><p id="cmpEnergia">Sin datos suficientes.</p></div>
+          <div class="col-6"><h3>Comparación de rendimiento (km/G)</h3><p id="cmpRendimiento">Sin datos suficientes.</p></div>
+          <div class="col-6"><h3>Ahorro económico</h3><p id="cmpAhorroEconomico">Sin datos suficientes.</p></div>
+          <div class="col-6"><h3>Energía por sol</h3><p id="cmpEnergiaPorSol">Sin datos suficientes.</p></div>
         </div>
       </section>
 
       <!-- =========================================================
            SECCIÓN 5: ACCIONES
-           ========================================================= -->
-      <div class="grid">
-        <div class="col-12 actions">
-          <button class="primary" id="btnCalcular">Calcular</button>
-          <button id="btnGuardar" disabled>Agregar al historial</button>
-          <button id="btnLimpiar">Limpiar</button>
-          <button id="btnBorrarTodo">Borrar todo</button>
-          <button id="btnCSV">Exportar CSV</button>
-          <button id="btnPDF">Exportar PDF</button>
-        </div>
+      ========================================================= -->
+      <div class="actions grid col-12">
+        <button class="primary" id="btnCalcular">Calcular</button>
+        <button id="btnGuardar" disabled>Agregar al historial</button>
+        <button id="btnLimpiar">Limpiar</button>
+        <button id="btnBorrarTodo">Borrar todo</button>
+        <button id="btnCSV">Exportar CSV</button>
+        <button id="btnPDF">Exportar PDF</button>
       </div>
 
       <!-- =========================================================
-           SECCIÓN 6: HISTORIAL DE PRUEBAS
-           ========================================================= -->
+           SECCIÓN 6: HISTORIAL
+      ========================================================= -->
       <h2>Historial de pruebas</h2>
 
       <table id="hist">
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Comb.</th>
-            <th>Vol.</th>
-            <th>KM</th>
-            <th>MJ</th>
-            <th>G/100</th>
-            <th>km/G</th>
-            <th>Costo</th>
-            <th>Técnico</th>
-            <th>Base</th>
-            <th>Alternativa</th>
-            <th>Eliminar</th>
+            <th>Fecha</th><th>Comb.</th><th>Vol.</th><th>KM</th><th>MJ</th>
+            <th>G/100</th><th>km/G</th><th>Costo</th><th>Técnico</th>
+            <th>Base</th><th>Alternativa</th><th>Eliminar</th>
           </tr>
         </thead>
-
         <tbody></tbody>
-
-        <tfoot>
-          <tr>
-            <td colspan="12" class="muted">
-              Exporta a PDF o CSV para guardar el historial.
-            </td>
-          </tr>
-        </tfoot>
+        <tfoot><tr><td colspan="12" class="muted">Exporta a PDF o CSV para guardar el historial.</td></tr></tfoot>
       </table>
 
     </div>
@@ -270,5 +257,4 @@
 
   <script src="app.js"></script>
 </body>
-
 </html>
